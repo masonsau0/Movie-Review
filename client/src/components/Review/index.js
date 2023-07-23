@@ -24,11 +24,11 @@ const Review = () => {
         </Toolbar>
       </AppBar>
       <div>
-        {/* Your review functionality goes here */}
+
         <Typography variant="h3" color="inherit" noWrap>
           Write Movie Review
         </Typography>
-        {/* Your review form and functionality go here */}
+
       </div>
     </div>
   );

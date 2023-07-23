@@ -14,8 +14,7 @@ const Search = () => {
   const [director, setDirector] = useState('');
 
   const handleSearch = () => {
-    // Here you can handle the search logic and send the search criteria to the server
-    // For now, let's just display the search criteria on the console
+
     console.log('Title:', title);
     console.log('Actor:', actor);
     console.log('Director:', director);

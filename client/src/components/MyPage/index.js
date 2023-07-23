@@ -24,11 +24,11 @@ const MyPage = () => {
         </Toolbar>
       </AppBar>
       <div>
-        {/* Your custom content for MyPage goes here */}
+
         <Typography variant="h3" color="inherit" noWrap>
           My Page
         </Typography>
-        {/* Your MyPage content and functionality go here */}
+
       </div>
     </div>
   );

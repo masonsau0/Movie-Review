@@ -38,7 +38,7 @@ const Landing = () => {
         <Typography variant="h5" color="inherit" noWrap>
           Find and review your favorite movies!
         </Typography>
-        {/* Your custom content for the Landing page goes here */}
+
         <Typography variant="body1" color="inherit" noWrap>
           Explore the world of movies with Movie App. Whether you're a movie enthusiast or just looking for something to watch, our app has something for you. Search for movies by title, actor, or director to discover new favorites. Write reviews and share your thoughts with the movie-loving community.
         </Typography>
