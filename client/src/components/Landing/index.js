@@ -14,11 +14,11 @@ const Landing = () => {
   };
 
   return (
-    <div style={{ backgroundColor: 'grey', minHeight: '100vh' }}>
+    <div>
       <AppBar position="static">
-        <Toolbar style={{ display: 'flex' }}>
+      <Toolbar style={{ display: 'flex', justifyContent: 'space-around' }}>
           <Typography variant="h6" style={linkStyle} onClick={() => navigate('/')}>
-            Movie App
+            Landing
           </Typography>
           <Typography variant="h6" style={linkStyle} onClick={() => navigate('/Search')}>
             Search
@@ -27,20 +27,16 @@ const Landing = () => {
             Review
           </Typography>
           <Typography variant="h6" style={linkStyle} onClick={() => navigate('/MyPage')}>
-            My Page
+            MyPage
           </Typography>
         </Toolbar>
       </AppBar>
-      <div style={{ padding: '20px' }}>
+      <div style={{ padding: '30px', textAlign: 'center' }}>
         <Typography variant="h3" color="inherit" noWrap>
-          Welcome to Movie App
+          Welcome to the Movie App
         </Typography>
-        <Typography variant="h5" color="inherit" noWrap>
+        <Typography variant="h5" color="inherit" noWrap style={{ marginTop: '10px' }}>
           Find and review your favorite movies!
-        </Typography>
-
-        <Typography variant="body1" color="inherit" noWrap>
-          Explore the world of movies with Movie App. Whether you're a movie enthusiast or just looking for something to watch, our app has something for you. Search for movies by title, actor, or director to discover new favorites. Write reviews and share your thoughts with the movie-loving community.
         </Typography>
       </div>
     </div>
