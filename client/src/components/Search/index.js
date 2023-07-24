@@ -1,88 +1,157 @@
 import React, { useState } from 'react';
-import Typography from '@mui/material/Typography';
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
+import axios from 'axios';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
-import Link from '@mui/material/Link';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
 import { useNavigate } from 'react-router-dom';
 
 const Search = () => {
+  const [movieTitle, setMovieTitle] = useState('');
+  const [actorName, setActorName] = useState('');
+  const [directorName, setDirectorName] = useState('');
+  const [movieData, setMovieData] = useState([]);
   const navigate = useNavigate();
-  const [title, setTitle] = useState('');
-  const [actor, setActor] = useState('');
-  const [director, setDirector] = useState('');
 
   const handleSearch = () => {
-
-    console.log('Title:', title);
-    console.log('Actor:', actor);
-    console.log('Director:', director);
+    setMovieData([]);
+  
+    axios
+      .post('/api/searchMovies', { title: movieTitle, actor: actorName, director: directorName })
+      .then((response) => {
+        const aggregatedMovies = response.data.reduce((acc, movie) => {
+          const key = `${movie.movieTitle}_${movie.director}`;
+          if (!acc[key]) {
+            acc[key] = { ...movie, reviewContent: [movie.reviewContent], avgReviewScore: parseFloat(movie.avgReviewScore) };
+          } else {
+            acc[key].reviewContent.push(movie.reviewContent);
+            acc[key].avgReviewScore =
+              (acc[key].avgReviewScore + parseFloat(movie.avgReviewScore)) / acc[key].reviewContent.length;
+          }
+          return acc;
+        }, {});
+  
+        setMovieData(Object.values(aggregatedMovies));
+      })
+      .catch((error) => {
+        console.error('Error retrieving movie data:', error);
+      });
   };
-
-  const appbarLinkStyle = {
-    cursor: 'pointer', // Change the cursor to a pointer on hover
-    flexGrow: 1, // Distribute links evenly across the Appbar
-    textAlign: 'center', // Center align the link text
-    textDecoration: 'none', // Remove underline from the links
-    color: 'white', // Set the font color to white
-  };
-
+ 
   return (
-    <div style={{ backgroundColor: 'grey', minHeight: '100vh' }}>
+    <div>
       <AppBar position="static">
-        <Toolbar style={{ display: 'flex' }}>
-          <Link variant="h6" style={appbarLinkStyle} onClick={() => navigate('/')}>
-            Movie App
-          </Link>
-          <Link variant="h6" style={appbarLinkStyle} onClick={() => navigate('/Search')}>
+        <Toolbar style={{ display: 'flex', justifyContent: 'space-around' }}>
+          <Typography
+            variant="h6"
+            color="inherit"
+            noWrap
+            style={{ cursor: 'pointer' }}
+            onClick={() => navigate('/')}
+          >
+            Landing
+          </Typography>
+          <Typography
+            variant="h6"
+            color="inherit"
+            noWrap
+            style={{ cursor: 'pointer' }}
+            onClick={() => navigate('/Search')}
+          >
             Search
-          </Link>
-          <Link variant="h6" style={appbarLinkStyle} onClick={() => navigate('/Review')}>
+          </Typography>
+          <Typography
+            variant="h6"
+            color="inherit"
+            noWrap
+            style={{ cursor: 'pointer' }}
+            onClick={() => navigate('/Review')}
+          >
             Review
-          </Link>
-          <Link variant="h6" style={appbarLinkStyle} onClick={() => navigate('/MyPage')}>
-            My Page
-          </Link>
+          </Typography>
+          <Typography
+            variant="h6"
+            color="inherit"
+            noWrap
+            style={{ cursor: 'pointer' }}
+            onClick={() => navigate('/MyPage')}
+          >
+            MyPage
+          </Typography>
         </Toolbar>
       </AppBar>
-      <div style={{ padding: '20px' }}>
-        <Typography variant="h3" color="inherit" noWrap>
-          Movie Search
-        </Typography>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '20px' }}>
+        <Typography variant="h3">Search for a Movie</Typography>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <TextField
-          label="Movie Title"
-          variant="outlined"
+          label="Movie title"
+          value={movieTitle}
+          onChange={(e) => setMovieTitle(e.target.value)}
           fullWidth
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          style={{ marginBottom: '10px' }}
+          style={{ marginTop: '30px', marginBottom: '30px' }}
         />
         <TextField
-          label="Actor's First Name + Last Name"
-          variant="outlined"
+          label="Actor's name"
+          value={actorName}
+          onChange={(e) => setActorName(e.target.value)}
           fullWidth
-          value={actor}
-          onChange={(e) => setActor(e.target.value)}
-          style={{ marginBottom: '10px' }}
+          style={{ marginBottom: '30px' }}
         />
         <TextField
-          label="Director's First Name + Last Name"
-          variant="outlined"
+          label="Director's name"
+          value={directorName}
+          onChange={(e) => setDirectorName(e.target.value)}
           fullWidth
-          value={director}
-          onChange={(e) => setDirector(e.target.value)}
-          style={{ marginBottom: '10px' }}
+          style={{ marginBottom: '30px' }}
         />
-        <Button variant="contained" color="primary" onClick={handleSearch}>
+        <Button onClick={handleSearch} variant="contained" color="primary" style={{ marginLeft: '30px' }}>
           Search
         </Button>
       </div>
+      {movieData.length > 0 && (
+        <div style={{ marginLeft: '10px' }}>
+          <h2>Search Results:</h2>
+          <ul>
+            {movieData.map((movie) => (
+              <li key={movie.movieTitle}>
+                <strong>Movie Title:</strong> {movie.movieTitle}
+                <br />
+                <strong>Director:</strong> {movie.director}
+                <br />
+                <strong>Reviews:</strong> {Array.isArray(movie.reviewContent) ? movie.reviewContent.join(', ') : movie.reviewContent}
+                <br />
+                <strong>Average Review Score:</strong> {movie.avgReviewScore}
+                <hr />
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 };
 
 export default Search;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
