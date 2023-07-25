@@ -31,6 +31,7 @@ const Landing = () => {
           </Typography>
         </Toolbar>
       </AppBar>
+
       <div style={{ padding: '30px', textAlign: 'center' }}>
         <Typography variant="h3" color="inherit" noWrap>
           Welcome to the Movie App
@@ -42,6 +43,8 @@ const Landing = () => {
     </div>
   );
 };
+
+
 
 export default Landing;
 

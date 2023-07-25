@@ -65,7 +65,7 @@ app.post('/api/loadUserSettings', (req, res) => {
 	let connection = mysql.createConnection(config);
 	let userID = req.body.userID;
 
-	let sql = `SELECT mode FROM user WHERE userID = ?`;
+	let sql = `SELECT * FROM User WHERE userID = ?`;
 	console.log(sql);
 	let data = [userID];
 	console.log(data);
@@ -85,6 +85,7 @@ app.post('/api/loadUserSettings', (req, res) => {
 
 app.post('/api/searchMovies', (req, res) => {
 	const { title, actor, director } = req.body;
+	const [firstName, lastName] = actor ? actor.split(' ') : ['', '']; // Split actor name into first and last name
   
 	let sql = `
 	  SELECT m.name AS movieTitle, CONCAT(d.first_name, ' ', d.last_name) AS director,
@@ -104,8 +105,12 @@ app.post('/api/searchMovies', (req, res) => {
 	  conditions.push(`m.name LIKE '%${title}%'`);
 	}
   
-	if (actor) {
-	  conditions.push(`CONCAT(a.first_name, ' ', a.last_name) LIKE '%${actor}%'`);
+	if (firstName) {
+	  conditions.push(`a.first_name LIKE '%${firstName}%'`);
+	}
+  
+	if (lastName) {
+	  conditions.push(`a.last_name LIKE '%${lastName}%'`);
 	}
   
 	if (director) {
@@ -139,6 +144,103 @@ app.post('/api/searchMovies', (req, res) => {
 	connection.end();
   });
 
+  app.post('/api/movieRecommendations', (req, res) => {
+	const { movieTitle } = req.body;
+	let connection = mysql.createConnection(config);
+  
+	// Get the lead actors of the given movie
+	let getLeadActorsSql = `
+	  SELECT a.first_name, a.last_name
+	  FROM actors a
+	  JOIN roles r ON a.id = r.actor_id
+	  JOIN movies m ON r.movie_id = m.id
+	  WHERE m.name = ?
+	`;
+  
+	connection.query(getLeadActorsSql, [movieTitle], (error, results, fields) => {
+	  if (error) {
+		console.error(error.message);
+		return res.status(500).send('Error retrieving lead actors');
+	  }
+  
+	  const leadActors = results.map((actor) => `${actor.first_name} ${actor.last_name}`);
+  
+	  // Get movie recommendations based on lead actors
+	  let getRecommendationsSql = `
+      SELECT m.name AS movieTitle, m.id AS movie_id, GROUP_CONCAT(DISTINCT CONCAT(a.first_name, ' ', a.last_name)) AS leadActors
+      FROM movies m
+      JOIN roles r ON m.id = r.movie_id
+      JOIN actors a ON r.actor_id = a.id
+      WHERE CONCAT(a.first_name, ' ', a.last_name) IN (?)
+      AND m.name <> ?
+      AND NOT EXISTS (
+        SELECT 1
+        FROM UserFeedback uf
+        WHERE uf.movie_id = m.id
+        AND uf.liked = 0
+        AND uf.userID = 1 -- Replace this with the actual user ID
+      )
+      GROUP BY m.name, m.id
+    `;
+  
+	  connection.query(getRecommendationsSql, [leadActors, movieTitle], (error, results, fields) => {
+		if (error) {
+		  console.error(error.message);
+		  return res.status(500).send('Error retrieving movie recommendations');
+		}
+  
+		const recommendations = results.map((movie) => ({
+		  movie_id: movie.movie_id,
+		  movieTitle: movie.movieTitle,
+		  leadActors: movie.leadActors,
+		  
+		}));
+  
+		res.status(200).json(recommendations);
+	  });
+  
+	  connection.end();
+	});
+  });
+  
+  app.post('/api/saveLike', (req, res) => {
+	const { userID, movieID } = req.body;
+  
+	let connection = mysql.createConnection(config);
+  
+	let sql = 'INSERT INTO UserFeedback (userID, movie_id, liked) VALUES (?, ?, ?)';
+	let data = [userID, movieID, 1]; // Assuming "1" represents "liked" in the `UserFeedback` table
+  
+	connection.query(sql, data, (error, results, fields) => {
+	  if (error) {
+		console.error('Error saving like:', error.message);
+		return res.status(500).send('Error saving like');
+	  } else {
+		res.status(200).send('Like saved successfully');
+	  }
+	  connection.end();
+	});
+  });
+
+  app.post('/api/saveDislike', (req, res) => {
+	const { userID, movieID } = req.body;
+  
+	let connection = mysql.createConnection(config);
+  
+	let sql = 'INSERT INTO UserFeedback (userID, movie_id, liked) VALUES (?, ?, ?)';
+	let data = [userID, movieID, 0]; // Assuming "1" represents "liked" in the `UserFeedback` table
+  
+	connection.query(sql, data, (error, results, fields) => {
+	  if (error) {
+		console.error('Error saving like:', error.message);
+		return res.status(500).send('Error saving disike');
+	  } else {
+		res.status(200).send('Disike saved successfully');
+	  }
+	  connection.end();
+	});
+  });
+  
 
 app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version
 //app.listen(port, '172.31.31.77'); //for the deployed version, specify the IP address of the server
