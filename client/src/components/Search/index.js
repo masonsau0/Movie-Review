@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useState } from 'react';
 import axios from 'axios';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
@@ -21,41 +22,52 @@ const Search = () => {
   const [movieData, setMovieData] = useState([]);
 
   const handleSearch = () => {
+    // Clears the existing movieData array to prepare for new search results
     setMovieData([]);
-  
+
+    // Makes a POST request to '/api/searchMovies' API endpoint with search parameters
     axios
       .post('/api/searchMovies', { title: movieTitle, actor: actorName, director: directorName })
       .then((response) => {
+        // Processes the response data to aggregate movies with the same title and director
         const aggregatedMovies = response.data.reduce((acc, movie) => {
+          // Creates a unique key for each movie based on movieTitle and director
           const key = `${movie.movieTitle}_${movie.director}`;
+
+          // Checks if the movie with the same key already exists in the accumulator object (acc)
           if (!acc[key]) {
+            // If not, create a new entry with initial values and the first review content
             acc[key] = { ...movie, reviewContent: [movie.reviewContent], avgReviewScore: parseFloat(movie.avgReviewScore) };
           } else {
+            // If the movie already exists, update its data with the new review content and average score
             acc[key].reviewContent.push(movie.reviewContent);
-            acc[key].avgReviewScore1 =
-            (acc[key].avgReviewScore) * (acc[key].reviewContent.length - 1);
-            acc[key].avgReviewScore =
-              (acc[key].avgReviewScore1 + parseFloat(movie.avgReviewScore)) / acc[key].reviewContent.length;
+            acc[key].avgReviewScore1 = (acc[key].avgReviewScore) * (acc[key].reviewContent.length - 1);
+            acc[key].avgReviewScore = (acc[key].avgReviewScore1 + parseFloat(movie.avgReviewScore)) / acc[key].reviewContent.length;
             acc[key].avgReviewScore = acc[key].avgReviewScore.toFixed(1);
           }
+
+          // Average review score becomes NaN (Not a Number)
           if (isNaN(acc[key].avgReviewScore)) {
             acc[key].avgReviewScore = '';
           }
-  
+
           return acc;
         }, {});
-  
+
+        // Sets the movieData state to an array containing the aggregated movie data
         setMovieData(Object.values(aggregatedMovies));
       })
       .catch((error) => {
+        // Errors if the request fails
         console.error('Error retrieving movie data:', error);
       });
   };
 
+
   return (
     <div>
       <AppBar position="static">
-      <Toolbar style={{ display: 'flex', justifyContent: 'space-around' }}>
+        <Toolbar style={{ display: 'flex', justifyContent: 'space-around' }}>
           <Typography variant="h6" style={linkStyle} onClick={() => navigate('/')}>
             Landing
           </Typography>
@@ -78,17 +90,17 @@ const Search = () => {
 
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'left' }}>
         <Typography variant="h6" style={{ marginBottom: '-10px', fontSize: '16px' }}>Search by Movie Title:</Typography>
-        <TextField label="Movie title" value={movieTitle} onChange={(e) => setMovieTitle(e.target.value)} fullWidth style={{ marginTop: '10px', marginBottom: '20px' }}/>
+        <TextField label="Movie title" value={movieTitle} onChange={(e) => setMovieTitle(e.target.value)} fullWidth style={{ marginTop: '10px', marginBottom: '20px' }} />
 
         <Typography variant="h6" style={{ marginBottom: '-2px', fontSize: '16px' }}>Search by Actor's Name:</Typography>
-        <TextField label="Actor's name" value={actorName} onChange={(e) => setActorName(e.target.value)} fullWidth style={{ marginBottom: '20px' }}/>
+        <TextField label="Actor's name" value={actorName} onChange={(e) => setActorName(e.target.value)} fullWidth style={{ marginBottom: '20px' }} />
 
         <Typography variant="h6" style={{ marginBottom: '-2px', fontSize: '16px' }}>Search by Director's Name:</Typography>
-        <TextField label="Director's name" value={directorName} onChange={(e) => setDirectorName(e.target.value)} fullWidth style={{ marginBottom: '20px' }}/>
+        <TextField label="Director's name" value={directorName} onChange={(e) => setDirectorName(e.target.value)} fullWidth style={{ marginBottom: '20px' }} />
       </div>
       <Button onClick={handleSearch} variant="contained" color="primary" style={{ marginLeft: '900px' }}>
-          Search
-        </Button>
+        Search
+      </Button>
 
       {movieData.length > 0 && (
         <div style={{ marginLeft: '10px' }}>

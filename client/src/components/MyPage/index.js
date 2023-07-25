@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useState } from 'react';
 import Typography from '@mui/material/Typography';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
@@ -62,7 +63,7 @@ const MyPage = () => {
       prevRecommendations.filter((movie) => movie.movie_id !== movieID)
     );
   
-    // Send the disliked movieID to the server (if you want to save the dislike information)
+    // Send the disliked movieID to the server
     axios.post('/api/saveDislike', { userID: 1, movieID: movieID })
       .then((response) => {
         console.log('Disliked Movie ID:', movieID);

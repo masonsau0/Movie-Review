@@ -84,9 +84,11 @@ app.post('/api/loadUserSettings', (req, res) => {
 
 
 app.post('/api/searchMovies', (req, res) => {
-	const { title, actor, director } = req.body;
-	const [firstName, lastName] = actor ? actor.split(' ') : ['', '']; // Split actor name into first and last name
-  
+	const { title, actor, director } = req.body;   // Extracts title, actor, and director from the request body
+	
+	const [firstName, lastName] = actor ? actor.split(' ') : ['', ''];   	// Splits the actor name into first and last name
+	
+	// SQL query to retrieve movie data along with average review score
 	let sql = `
 	  SELECT m.name AS movieTitle, CONCAT(d.first_name, ' ', d.last_name) AS director,
 			 r.reviewContent, AVG(r.reviewScore) AS avgReviewScore
@@ -98,51 +100,63 @@ app.post('/api/searchMovies', (req, res) => {
 	  LEFT JOIN actors a ON roles1.actor_id = a.id
 	  WHERE 1
 	`;
-  
-	const conditions = [];
-  
+	
+	const conditions = [];   // An array to store SQL conditions for the search query
+	
+	// Tests the title condition to the search query, if provided
 	if (title) {
 	  conditions.push(`m.name LIKE '%${title}%'`);
 	}
-  
+	
+	// Tests the first name condition to the search query, if provided
 	if (firstName) {
 	  conditions.push(`a.first_name LIKE '%${firstName}%'`);
 	}
-  
+	
+	// Tests the last name condition to the search query, if provided
 	if (lastName) {
 	  conditions.push(`a.last_name LIKE '%${lastName}%'`);
 	}
-  
+	
+	// Tests the director condition to the search query, if provided
 	if (director) {
 	  conditions.push(`CONCAT(d.first_name, ' ', d.last_name) LIKE '%${director}%'`);
 	}
-  
+	
+	// Combines all conditions with 'AND' and adding to the SQL query
 	if (conditions.length > 0) {
 	  sql += ' AND ' + conditions.join(' AND ');
 	}
-  
+	
+	// Groups the results by movie title, director, and review content
 	sql += ' GROUP BY m.name, director, r.reviewContent';
-  
+	
+	// Creates a MySQL connection using the config settings
 	const connection = mysql.createConnection(config);
-  
+	
+	// Executes the SQL query
 	connection.query(sql, (error, results, fields) => {
 	  if (error) {
 		console.error(error.message);
 		return res.status(500).send('Error retrieving movie data');
 	  }
-  
+	  
+	  // Mapes the results to extract relevant data for movieData
 	  const movieData = results.map((result) => ({
 		movieTitle: result.movieTitle,
 		director: result.director,
 		reviewContent: result.reviewContent,
 		avgReviewScore: result.avgReviewScore,
 	  }));
-  
+	  
+	  // Sends the movieData as a JSON response
 	  res.status(200).json(movieData);
 	});
-  
+	
+	// Closing the database connection
 	connection.end();
-  });
+});
+
 
   app.post('/api/movieRecommendations', (req, res) => {
 	const { movieTitle } = req.body;
@@ -162,7 +176,8 @@ app.post('/api/searchMovies', (req, res) => {
 		console.error(error.message);
 		return res.status(500).send('Error retrieving lead actors');
 	  }
-  
+	  
+	   // Mappes the results to get the full names of lead actors
 	  const leadActors = results.map((actor) => `${actor.first_name} ${actor.last_name}`);
   
 	  // Get movie recommendations based on lead actors
@@ -209,7 +224,7 @@ app.post('/api/searchMovies', (req, res) => {
 	let connection = mysql.createConnection(config);
   
 	let sql = 'INSERT INTO UserFeedback (userID, movie_id, liked) VALUES (?, ?, ?)';
-	let data = [userID, movieID, 1]; // Assuming "1" represents "liked" in the `UserFeedback` table
+	let data = [userID, movieID, 1]; 
   
 	connection.query(sql, data, (error, results, fields) => {
 	  if (error) {
@@ -228,7 +243,7 @@ app.post('/api/searchMovies', (req, res) => {
 	let connection = mysql.createConnection(config);
   
 	let sql = 'INSERT INTO UserFeedback (userID, movie_id, liked) VALUES (?, ?, ?)';
-	let data = [userID, movieID, 0]; // Assuming "1" represents "liked" in the `UserFeedback` table
+	let data = [userID, movieID, 0]; 
   
 	connection.query(sql, data, (error, results, fields) => {
 	  if (error) {
@@ -242,5 +257,4 @@ app.post('/api/searchMovies', (req, res) => {
   });
   
 
-app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version
-//app.listen(port, '172.31.31.77'); //for the deployed version, specify the IP address of the server
+app.listen(port, () => console.log(`Listening on port ${port}`));

@@ -22,8 +22,8 @@ const Review = () => {
 
   const [movies, setMovies] = React.useState([]);
 
-  const [selectedMovie, setSelectedMovie] = React.useState('');   // initial state variable 'selectedMovies' (empty) and setter/updater function 'setSelectedMovies'
-  const [enteredTitle, setEnteredTitle] = React.useState('');   //initial state variable 'enteredTitle' (empty) and setter/updater function 'setEnteredTitle'
+  const [selectedMovie, setSelectedMovie] = React.useState('');  
+  const [enteredTitle, setEnteredTitle] = React.useState('');   
   const [enteredReview, setEnteredReview] = React.useState('');
   const [selectedRating, setSelectedRating] = React.useState('');
 
