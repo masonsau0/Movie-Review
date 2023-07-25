@@ -167,6 +167,7 @@ const Review = () => {
           </Typography>
         </Toolbar>
       </AppBar>
+      
       <Grid container spacing={2}>   {/* Grid component from MUI, creates a grid container to hold the layout and sets the spacing between grid items */}
         <Grid item xs={12} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>   {/* creates a grid item inside the container with a width of 12 (full width) */}
           <Typography variant="h3" style={{ marginTop: '20px' }}>Review a movie</Typography>   {/* creates a Typography component with a 'Heading 3' and displays text */}
